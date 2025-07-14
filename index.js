@@ -71,7 +71,8 @@ app.use(express.static("public"));
 app.get("/",async (req,res) => {
     const movies = await getMovies();
     res.render("index.ejs",{
-        movies: movies
+        movies: movies,
+        total: movies.length
     });
 })
 
