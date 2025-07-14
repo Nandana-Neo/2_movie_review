@@ -16,7 +16,7 @@
           Movies Watched
         </div>
         <a href="/add">
-          <div class="rounded-full bg-[#5B8FB9] w-14 h-14 flex items-center justify-center border-4 border-[#D9D9D9]">
+          <div class="transition-transform hover:scale-110 rounded-full bg-[#5B8FB9] w-14 h-14 flex items-center justify-center border-4 border-[#D9D9D9]">
             <img class="w-fit" src="assets/icons/plus.svg" alt="+" />
           </div>
         </a>
@@ -24,10 +24,26 @@
       <div class="px-8 mt-15">
         <div class="w-full flex flex-col gap-4">
           <% for(let movie of movies) {%>
-            <div class="bg-[#03001C] p-5 rounded-md text-2xl flex flex-row w-full gap-3">
+            <div class="bg-[#03001C] p-5 rounded-md text-xl flex flex-row w-full gap-3">
               <div class="w-2/3">
-                <div class="text-4xl font-bold">
-                  <%= movie.name %>
+                <div class="flex flex-row justify-between items-center">
+                  <div class="text-4xl font-bold">
+                    <%= movie.name %>
+                  </div>
+                  <div class="flex flex-row w-fit gap-3">
+                    <form action="/edit" method="get" >
+                      <input type="hidden" name="id" value="<%= movie.id %>">
+                      <button type="submit" class="hover:cursor-pointer transition-transform hover:scale-120 hover:cursor-pointer h-full">
+                        <img class="h-5" src="assets/icons/pencil-solid.svg"/>
+                      </button>
+                    </form>
+                    <form action="/delete" method="get" >
+                      <input type="hidden" name="id" value="<%= movie.id %>">
+                      <button type="submit" class="hover:cursor-pointer transition-transform hover:scale-120 hover:cursor-pointer h-full">
+                        <img class="h-5" src="assets/icons/trash.svg"/>
+                      </button>
+                    </form>
+                  </div>
                 </div>
                 <hr/>
                 <div class="flex flex-row justify-between pt-4">
@@ -35,7 +51,7 @@
                   <p>Rating:<%= movie.rating %>/5</p>
                 </div>
                 <p class="pb-4">Genre: <%= movie.genre %></p>
-                <p class="line-clamp-3 text-xl"><%= movie.review %></p>
+                <p class=" text-xl"><%= movie.review %></p>
               </div>
               <div class="w-1/3 center bg-[#D7D7D7] p-1 flex items-center justify-center">
                 <img class="object-scale-down" src="<%= movie.img%>" alt="Movie image" />
