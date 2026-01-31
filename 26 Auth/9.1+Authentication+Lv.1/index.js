@@ -97,6 +97,13 @@ app.post("/login", localAuthMiddleware, (req, res) => {
   res.redirect("/secrets");
 });
 
+app.post('/logout', (req, res, next) => {
+  req.logout(function(err) {
+    if (err) { return next(err); }
+    res.redirect('/');
+  });
+});
+
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
