@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import bcrypt from "bcrypt";
 import db from "./db.js";
 import passport from "./auth.js";
+import session from 'express-session';
 
 const app = express();
 const port = 3000;
@@ -10,12 +11,21 @@ const saltRounds = 10;
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
+app.use(session({
+  secret: 'keyboard cat',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 1000*60*60*1 } // 1 hr in ms
+}));
+
 app.use(passport.initialize());
+
+app.use(passport.session())
 
 const localAuthMiddleware = passport.authenticate('local', {
   successRedirect: '/secrets',
   failureRedirect: '/login',
-  session: false
+  session: true,
 });
 
 
@@ -32,26 +42,24 @@ app.get("/register", (req, res) => {
 });
 
 app.get("/secrets", (req, res) => {
-  // console.log("Here")
-  // console.log(req.isAuthenticated());
-  // if(req.isAuthenticated()){
+  console.log(req.user);
+  if(req.isAuthenticated()){
+    console.log(req.user);
     return res.render("secrets.ejs");
-  // }
-  // else{
-  //   res.redirect("/login");
-  // }
+  }
+  else{
+    res.redirect("/login");
+  }
 });
 
 
 async function addUser(email, password){
   try{
-    await db.connect();
-    bcrypt.hash(password, saltRounds, async function(err, hash) {
-      if (err){
-        console.log("Cannot hash passwd:", err)
-      }
-      await db.query('INSERT INTO users(email,password) VALUES($1,$2) RETURNING id;', [email, hash])
-    });
+      const hash = await bcrypt.hash(password, saltRounds);
+      const results = await db.query('INSERT INTO users(email,password) VALUES($1,$2) RETURNING *;', [email, hash])
+      const user = results.rows[0];
+      return user;
+    
   }
   catch(err){
     console.log(err)
@@ -62,7 +70,6 @@ async function addUser(email, password){
 
 app.post("/register", async (req, res) => {
   try{
-    await db.connect();
     const email = req.body.username;
     const password = req.body.password;
     const results = await db.query("SELECT * FROM users WHERE email=$1;",[email]);
@@ -70,8 +77,13 @@ app.post("/register", async (req, res) => {
     if (results.rows.length > 0){
       return res.send("User exists: Try logging in");
     }
-    await addUser(email, password);
-    res.redirect("/login");
+    const user = await addUser(email, password);
+    req.login(user, (err) => {
+      if (err){
+        console.log(err);
+      }
+      res.redirect("/secrets");
+    })
   }
   catch(err){
     res.send("Registering error")
