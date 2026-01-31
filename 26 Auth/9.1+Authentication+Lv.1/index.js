@@ -31,12 +31,29 @@ const localAuthMiddleware = passport.authenticate('local', {
   session: true,
 });
 
+const googleAuthMiddleware = passport.authenticate('google', {
+  successRedirect: '/secrets',
+  failureRedirect: '/login',
+  session: true,
+})
 
 app.get("/", (req, res) => {
   res.render("home.ejs");
 });
 
+app.get('/auth/google',
+  passport.authenticate('google', { scope:
+      [ 'email', 'profile' ] }
+));
+
+app.get('/auth/google/secrets',
+  googleAuthMiddleware
+);
+
 app.get("/login", (req, res) => {
+  if (req.isAuthenticated()){
+    return res.redirect("/secrets");
+  } 
   res.render("login.ejs");
 });
 
@@ -97,7 +114,7 @@ app.post("/login", localAuthMiddleware, (req, res) => {
   res.redirect("/secrets");
 });
 
-app.post('/logout', (req, res, next) => {
+app.get('/logout', (req, res, next) => {
   req.logout(function(err) {
     if (err) { return next(err); }
     res.redirect('/');
