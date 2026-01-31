@@ -4,6 +4,9 @@ import bcrypt from "bcrypt";
 import db from "./db.js";
 import passport from "./auth.js";
 import session from 'express-session';
+import env from 'dotenv';
+
+env.config();
 
 const app = express();
 const port = 3000;
@@ -12,7 +15,7 @@ const saltRounds = 10;
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(session({
-  secret: 'keyboard cat',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: { maxAge: 1000*60*60*1 } // 1 hr in ms
